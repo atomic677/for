@@ -128,7 +128,7 @@ The script downloads and manages official cloud images from:
 ### **Others**
 - Arch Linux  
 - openSUSE Leap / Tumbleweed  
-- Alpine Linux 3.20  
+- Alpine Linux 3.20  (not recommended to use it)
 
 ---
 
