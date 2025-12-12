@@ -1,41 +1,99 @@
-name: SSHX Session
+name: SSHX Remote Session
 
 on:
   workflow_dispatch:
     inputs:
       username:
-        description: 'Username'
+        description: 'Username for the session'
         required: true
-        default: 'user'
+        type: string
+        default: 'runner'
       password:
-        description: 'Password'
+        description: 'Password for sudo access'
         required: true
+        type: string
+      timeout_hours:
+        description: 'Session timeout (hours)'
+        required: false
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '4'
+          - '6'
+        default: '2'
 
 jobs:
-  run-sshx:
+  sshx-session:
+    name: Start SSHX Session
     runs-on: ubuntu-latest
     timeout-minutes: 360
 
     steps:
-      - name: Mask password
-        run: echo "::add-mask::${{ github.event.inputs.password }}"
-
-      - name: Setup user with sudo
+      - name: Mask sensitive data
         run: |
-          sudo useradd -m -s /bin/bash ${{ github.event.inputs.username }} || true
+          echo "::add-mask::${{ github.event.inputs.password }}"
+
+      - name: Create user with sudo access
+        run: |
+          sudo useradd -m -s /bin/bash ${{ github.event.inputs.username }} 2>/dev/null || true
           echo "${{ github.event.inputs.username }}:${{ github.event.inputs.password }}" | sudo chpasswd
-          echo "${{ github.event.inputs.username }} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/custom-user
+          echo "${{ github.event.inputs.username }} ALL=(ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/${{ github.event.inputs.username }}
+          sudo chmod 440 /etc/sudoers.d/${{ github.event.inputs.username }}
+          echo "✅ User '${{ github.event.inputs.username }}' created with sudo access"
 
-      - name: Download and install SSHX
+      - name: Install common tools
         run: |
-          wget -q https://github.com/ekzhang/sshx/releases/latest/download/sshx-x86_64-unknown-linux-musl.tar.gz
+          sudo apt-get update
+          sudo apt-get install -y vim nano htop curl wget git net-tools neofetch
+          echo "✅ Common tools installed"
+
+      - name: Install SSHX (Method 1 - Direct Binary)
+        run: |
+          # Download latest sshx binary directly from GitHub
+          SSHX_VERSION=$(curl -s https://api.github.com/repos/ekzhang/sshx/releases/latest | grep '"tag_name"' | cut -d'"' -f4)
+          echo "Installing SSHX version: $SSHX_VERSION"
+          
+          curl -LO "https://github.com/ekzhang/sshx/releases/latest/download/sshx-x86_64-unknown-linux-musl.tar.gz"
           tar -xzf sshx-x86_64-unknown-linux-musl.tar.gz
-          chmod +x sshx
           sudo mv sshx /usr/local/bin/
+          sudo chmod +x /usr/local/bin/sshx
+          
+          # Verify installation
           sshx --version
+          echo "✅ SSHX installed successfully"
 
-      - name: Run SSHX
+      - name: Display session info
         run: |
-          echo "🔗 SSHX URL will appear below:"
-          echo "================================"
-          sudo -u ${{ github.event.inputs.username }} /usr/local/bin/sshx
+          echo "============================================"
+          echo "🖥️  SYSTEM INFORMATION"
+          echo "============================================"
+          echo "OS: $(lsb_release -ds)"
+          echo "Kernel: $(uname -r)"
+          echo "CPU: $(nproc) cores"
+          echo "RAM: $(free -h | awk '/^Mem:/ {print $2}')"
+          echo "Disk: $(df -h / | awk 'NR==2 {print $4}') available"
+          echo "============================================"
+          echo "👤 Username: ${{ github.event.inputs.username }}"
+          echo "⏱️  Timeout: ${{ github.event.inputs.timeout_hours }} hour(s)"
+          echo "============================================"
+
+      - name: Start SSHX session
+        run: |
+          echo "============================================"
+          echo "🚀 STARTING SSHX SESSION"
+          echo "============================================"
+          echo ""
+          echo "📋 Look for the SSHX URL below to connect!"
+          echo ""
+          
+          # Run as created user with timeout
+          sudo -u ${{ github.event.inputs.username }} -i bash -c "
+            cd ~
+            timeout ${{ github.event.inputs.timeout_hours }}h /usr/local/bin/sshx
+          " || echo "Session ended"
+
+      - name: Session ended
+        if: always()
+        run: |
+          echo "👋 SSHX session has ended"
