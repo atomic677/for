@@ -140,3 +140,4 @@ Clone the repository:
 git clone https://github.com/<your-username>/vps123.git
 cd vps123
 chmod +x my.sh
+./my.sh
