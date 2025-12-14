@@ -2,6 +2,7 @@ npm install -g @bonsai-ai/cli
 
 bonsai login
 
-curl -fsSL https://claude.ai/install.sh | bash
+npm install -g @anthropic-ai/claude-code
+
 
 bonsai start claude
