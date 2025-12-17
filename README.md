@@ -111,7 +111,8 @@ The script downloads and manages official cloud images from:
 ### **Ubuntu**
 - 22.04 LTS  
 - 24.04 LTS  
-- 24.10 / 25.04  
+- 24.10 ( not recommended)
+- 25.04  
 
 ### **Debian**
 - 11 (Bullseye)  
