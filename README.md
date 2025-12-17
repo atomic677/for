@@ -134,10 +134,10 @@ The script downloads and manages official cloud images from:
 
 # 📦 **Installation**
 
-Clone the repository:
+Clone the repository and run the VM manager:
 
 ```bash
-git clone https://github.com/<your-username>/vps123.git
+git clone https://github.com/atomic677/vps123.git
 cd vps123
-chmod +x my.sh
-./my.sh
+chmod +x vm.sh
+./vm.sh
