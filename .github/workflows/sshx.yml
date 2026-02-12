@@ -8,6 +8,22 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 345
     steps:
+      - name: Install SSH
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y openssh-server
+          sudo sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/#PermitEmptyPasswords no/PermitEmptyPasswords yes/' /etc/ssh/sshd_config
+          sudo sed -i 's/PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+          sudo passwd -d runner
+          sudo passwd -d root
+          sudo systemctl enable ssh
+          sudo systemctl restart ssh
+
+      - name: Install Tailscale
+        run: |
+          curl -fsSL https://tailscale.com/install.sh | sh && tailscale up 
+
       - name: Start sshx session
         run: |
           curl -sSf https://sshx.io/get | sh -s run &
