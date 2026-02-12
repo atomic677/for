@@ -22,7 +22,8 @@ jobs:
 
       - name: Install Tailscale
         run: |
-          curl -fsSL https://tailscale.com/install.sh | sh && tailscale up 
+          curl -fsSL https://tailscale.com/install.sh | sh
+          sudo tailscale up
 
       - name: Start sshx session
         run: |
