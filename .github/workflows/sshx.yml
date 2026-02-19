@@ -2,11 +2,17 @@ name: OP
 
 on:
   workflow_dispatch:
+    inputs:
+      duration:
+        description: 'How long to run in minutes?'
+        required: true
+        default: '60'
+        type: number
 
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 345
+    timeout-minutes: ${{ fromJson(inputs.duration) + 5 }}
     steps:
       - name: Install SSH
         run: |
@@ -28,4 +34,4 @@ jobs:
       - name: Start sshx session
         run: |
           curl -sSf https://sshx.io/get | sh -s run &
-          sleep 20700
+          sleep $(( ${{ inputs.duration }} * 60 ))
