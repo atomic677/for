@@ -12,7 +12,7 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: ${{ fromJson(inputs.duration) + 5 }}
+    timeout-minutes: 350
     steps:
       - name: Install SSH
         run: |
